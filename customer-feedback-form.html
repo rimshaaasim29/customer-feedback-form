@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Customer Feedback</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #2f1f6b;
+    --ink-2: #3b2a85;
+    --muted: #6f66a3;
+    --field: #f1effb;
+    --violet: #7c5cf0;
+    --peach: #ffab70;
+    --star-off: #d9d4ee;
+    --error: #d6336c;
+    --sans: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+
+  body {
+    min-height: 100vh;
+    font-family: var(--sans);
+    color: var(--ink);
+    background: #f5f2ff;
+    display: grid;
+    place-items: center;
+    padding: 32px 16px;
+  }
+
+  /* Outer gradient card */
+  .shell {
+    position: relative;
+    width: 100%;
+    max-width: 940px;
+    padding: 44px 34px 34px;
+    border-radius: 28px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #8d68f4 0%, #b49bf8 28%, #e7a9e8 60%, #ffbb92 100%);
+    box-shadow: 0 30px 70px rgba(110, 80, 200, 0.28);
+    animation: rise .8s cubic-bezier(.2, .8, .2, 1) both;
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+
+  .sparkles { position: absolute; inset: 0; pointer-events: none; }
+  .sparkles i { position: absolute; border-radius: 50%; background: #fff; animation: twinkle 4s ease-in-out infinite; }
+  @keyframes twinkle { 0%, 100% { opacity: .15; transform: scale(.8); } 50% { opacity: .85; transform: scale(1.15); } }
+
+  .head { position: relative; text-align: center; }
+  h1 { margin: 0; font-size: clamp(30px, 6vw, 40px); font-weight: 700; color: var(--ink-2); letter-spacing: -0.01em; }
+  .tag { margin: 6px 0 2px; font-size: 18px; font-weight: 500; color: #4a3a92; }
+  .sla { margin: 0; font-size: 13px; color: #5a4a9c; }
+
+  /* Frosted panel */
+  .panel {
+    position: relative;
+    margin-top: 28px;
+    padding: 22px;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.46);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 10px 30px rgba(100, 70, 190, 0.12);
+    display: grid;
+    grid-template-columns: 0.9fr 1.2fr;
+    gap: 22px;
+    align-items: center;
+  }
+  .art { width: 100%; height: auto; display: block; overflow: visible; min-width: 0; }
+
+  /* White form card */
+  .card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 24px 22px 22px;
+    box-shadow: 0 14px 34px rgba(80, 50, 170, 0.16);
+    min-width: 0;
+    animation: rise .8s .1s cubic-bezier(.2, .8, .2, 1) both;
+  }
+  .card h2 { margin: 0 0 14px; font-size: 18px; font-weight: 600; color: var(--ink-2); }
+
+  form { display: grid; gap: 14px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .field { display: grid; gap: 6px; min-width: 0; align-content: start; }
+  label, .lab { font-size: 12px; font-weight: 500; color: #3b2f78; }
+  .req { color: #e0457f; }
+  .opt { color: #a39cc9; font-weight: 400; }
+
+  input, textarea {
+    width: 100%;
+    font: 400 13px/1.4 var(--sans);
+    color: var(--ink);
+    background: var(--field);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 11px 12px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s, background .2s;
+  }
+  input::placeholder, textarea::placeholder { color: #a39cc9; }
+  input:focus, textarea:focus { background: #fff; border-color: var(--violet); box-shadow: 0 0 0 4px rgba(124, 92, 240, 0.16); }
+  textarea { min-height: 96px; resize: vertical; }
+
+  .err { display: none; font-size: 11.5px; color: var(--error); }
+  .field.bad .err { display: block; }
+  .field.bad input, .field.bad textarea { border-color: var(--error); background: #fff5f8; }
+  .field.bad .stars, .field.bad .chips, .field.bad .seg { outline: 1.5px solid var(--error); outline-offset: 4px; border-radius: 10px; }
+
+  /* Stars */
+  .stars { display: flex; gap: 4px; width: fit-content; }
+  .star { background: none; border: 0; padding: 2px; cursor: pointer; line-height: 0; color: var(--star-off); transition: transform .2s, color .2s, filter .2s; border-radius: 8px; }
+  .star svg { width: 32px; height: 32px; display: block; fill: currentColor; }
+  .star:hover { transform: scale(1.18) rotate(-6deg); }
+  .star.on { color: #ffa65c; filter: drop-shadow(0 3px 6px rgba(255, 140, 70, 0.45)); }
+  .rtext { font-size: 12px; color: var(--muted); min-height: 16px; }
+
+  /* Category chips */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    font: 500 12.5px var(--sans);
+    color: #4a3d8f;
+    background: var(--field);
+    border: 1px solid transparent;
+    border-radius: 999px;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .chip:hover { transform: translateY(-2px); background: #e6e1fa; }
+  .chip[aria-pressed="true"] {
+    color: #fff;
+    background: linear-gradient(90deg, #8b5cf6, #c88af0 55%, #ffab70);
+    box-shadow: 0 8px 18px rgba(155, 110, 230, 0.4);
+  }
+
+  /* Yes / No */
+  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: var(--field); border-radius: 10px; width: 100%; max-width: 240px; }
+  .seg button { font: 500 13px var(--sans); color: var(--muted); background: transparent; border: 0; border-radius: 8px; padding: 9px 14px; cursor: pointer; transition: all .2s; }
+  .seg button[aria-pressed="true"] { color: #fff; background: linear-gradient(90deg, #8b5cf6, #c88af0 55%, #ffab70); box-shadow: 0 6px 14px rgba(155, 110, 230, 0.4); }
+
+  .count { font-size: 11.5px; color: #a39cc9; text-align: right; }
+
+  .send {
+    margin-top: 2px;
+    width: 100%;
+    padding: 13px 16px;
+    border: 0;
+    border-radius: 10px;
+    font: 600 14px var(--sans);
+    color: #fff;
+    cursor: pointer;
+    background: linear-gradient(90deg, #8b5cf6 0%, #c88af0 48%, #ffab70 100%);
+    background-size: 140% 100%;
+    box-shadow: 0 10px 22px rgba(155, 110, 230, 0.4);
+    transition: transform .2s, box-shadow .2s, background-position .5s;
+  }
+  .send:hover { transform: translateY(-2px); background-position: 100% 0; box-shadow: 0 14px 28px rgba(155, 110, 230, 0.5); }
+  .send:active { transform: translateY(0); }
+  .send[disabled] { opacity: .75; cursor: progress; transform: none; }
+  .spin { display: none; width: 14px; height: 14px; margin-right: 8px; border: 2px solid rgba(255,255,255,.5); border-top-color: #fff; border-radius: 50%; vertical-align: -2px; animation: spin .8s linear infinite; }
+  .send.loading .spin { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .fail { display: none; font-size: 12.5px; color: var(--error); background: #fff0f5; border-radius: 8px; padding: 10px 12px; }
+  .fail.show { display: block; }
+
+  button:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+
+  /* Success */
+  .done { display: none; text-align: center; padding: 28px 4px 16px; }
+  .done.show { display: block; animation: rise .6s both; }
+  .tick { width: 76px; height: 76px; margin: 0 auto 16px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, #8b5cf6, #ffab70); box-shadow: 0 12px 28px rgba(155, 110, 230, 0.45); animation: pop .5s cubic-bezier(.2, 1.4, .4, 1) both; }
+  .tick svg { width: 38px; height: 38px; fill: none; stroke: #fff; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 34; stroke-dashoffset: 34; animation: draw .5s .3s ease forwards; }
+  @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .done h3 { margin: 0 0 6px; font-size: 20px; color: var(--ink-2); }
+  .done p { margin: 0 auto 18px; max-width: 34ch; font-size: 13px; color: var(--muted); line-height: 1.55; }
+  .again { font: 500 13px var(--sans); color: var(--ink-2); background: var(--field); border: 0; border-radius: 10px; padding: 10px 18px; cursor: pointer; }
+  .again:hover { background: #e6e1fa; }
+
+  /* Illustration motion */
+  .bob1 { animation: bob 4.2s ease-in-out infinite; }
+  .bob2 { animation: bob 5s ease-in-out -1.5s infinite; }
+  .bob3 { animation: bob 4.6s ease-in-out -3s infinite; }
+  @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+  .wave { transform-origin: 110px 112px; animation: wave 1.8s ease-in-out infinite; }
+  @keyframes wave { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-12deg); } }
+
+  @media (max-width: 760px) {
+    .shell { padding: 34px 16px 18px; border-radius: 24px; }
+    .panel { grid-template-columns: 1fr; padding: 16px; }
+    .art { max-width: 270px; margin: 0 auto; }
+  }
+  @media (max-width: 460px) {
+    .row { grid-template-columns: 1fr; }
+    .card { padding: 20px 16px 18px; }
+    .star svg { width: 30px; height: 30px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  }
+</style>
+</head>
+<body>
+  <main class="shell">
+    <div class="sparkles" id="sparkles" aria-hidden="true"></div>
+
+    <header class="head">
+      <h1>Customer Feedback</h1>
+      <p class="tag">We would love to hear from you</p>
+      <p class="sla">It takes less than a minute.</p>
+    </header>
+
+    <section class="panel">
+      <svg class="art" viewBox="0 0 300 250" role="img" aria-label="A friendly person waving from an armchair with a laptop">
+        <defs>
+          <linearGradient id="chairG" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#a093ff"/>
+            <stop offset="1" stop-color="#6e5fe6"/>
+          </linearGradient>
+        </defs>
+
+        <ellipse cx="150" cy="226" rx="108" ry="14" fill="#c9bff4" opacity=".55"/>
+
+        <!-- chair -->
+        <rect x="78" y="74" width="142" height="124" rx="50" fill="url(#chairG)"/>
+        <rect x="62" y="152" width="174" height="58" rx="28" fill="#7a6bec"/>
+        <rect x="52" y="124" width="36" height="76" rx="18" fill="#8d80f4"/>
+        <rect x="212" y="124" width="36" height="76" rx="18" fill="#8d80f4"/>
+
+        <!-- legs -->
+        <path d="M126 184 L178 194 L186 216" stroke="#3f58c4" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M122 172 Q166 180 198 176 L208 212" stroke="#4b67da" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <ellipse cx="190" cy="224" rx="15" ry="6.5" fill="#fff" stroke="#d6d0f2"/>
+        <ellipse cx="214" cy="220" rx="16" ry="7" fill="#fff" stroke="#d6d0f2"/>
+
+        <!-- body -->
+        <rect x="102" y="98" width="82" height="80" rx="30" fill="#f7c455"/>
+        <rect x="134" y="86" width="16" height="16" rx="6" fill="#f1b98e"/>
+        <circle cx="118" cy="72" r="5" fill="#f1b98e"/>
+        <circle cx="142" cy="68" r="25" fill="#f6c8a1"/>
+        <path d="M116 66 Q112 36 144 38 Q174 38 168 66 Q160 50 142 52 Q126 52 116 66 Z" fill="#4a2f2a"/>
+        <circle cx="134" cy="70" r="2.2" fill="#3a2a2a"/>
+        <circle cx="152" cy="70" r="2.2" fill="#3a2a2a"/>
+        <path d="M134 80 Q143 88 152 80" stroke="#3a2a2a" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <circle cx="127" cy="78" r="4" fill="#f59ca0" opacity=".45"/>
+        <circle cx="159" cy="78" r="4" fill="#f59ca0" opacity=".45"/>
+
+        <!-- laptop -->
+        <polygon points="150,170 204,152 216,178 164,196" fill="#e4e9ff" stroke="#b9c1f0"/>
+        <polygon points="160,138 208,122 216,166 168,182" fill="#c9d3ff" stroke="#a7b2ee"/>
+        <circle cx="190" cy="150" r="5" fill="#fff" opacity=".8"/>
+
+        <!-- arm on laptop -->
+        <path d="M176 116 Q198 140 180 162" stroke="#f7c455" stroke-width="18" stroke-linecap="round" fill="none"/>
+        <circle cx="180" cy="164" r="8" fill="#f6c8a1"/>
+
+        <!-- waving arm -->
+        <g class="wave">
+          <path d="M110 112 Q92 100 88 82" stroke="#f7c455" stroke-width="18" stroke-linecap="round" fill="none"/>
+          <circle cx="88" cy="74" r="9" fill="#f6c8a1"/>
+        </g>
+
+        <!-- floating items -->
+        <g class="bob1">
+          <rect x="34" y="22" width="58" height="36" rx="14" fill="#8c7bf3"/>
+          <path d="M48 56 L42 70 L62 57 Z" fill="#8c7bf3"/>
+          <circle cx="50" cy="40" r="3.2" fill="#fff"/><circle cx="63" cy="40" r="3.2" fill="#fff"/><circle cx="76" cy="40" r="3.2" fill="#fff"/>
+        </g>
+        <g class="bob2">
+          <rect x="106" y="16" width="38" height="26" rx="10" fill="#bfe0ff"/>
+          <path d="M130 40 L138 50 L124 41 Z" fill="#bfe0ff"/>
+          <circle cx="118" cy="29" r="2.4" fill="#fff"/><circle cx="125" cy="29" r="2.4" fill="#fff"/><circle cx="132" cy="29" r="2.4" fill="#fff"/>
+        </g>
+        <g class="bob3">
+          <rect x="200" y="28" width="46" height="32" rx="6" fill="#ffd27a"/>
+          <path d="M200 32 L223 50 L246 32" stroke="#f0a53c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </g>
+
+        <!-- sparkles -->
+        <path transform="translate(262 92)" d="M0 -8 Q0 0 8 0 Q0 0 0 8 Q0 0 -8 0 Q0 0 0 -8Z" fill="#ffd36e"/>
+        <path transform="translate(24 110)" d="M0 -6 Q0 0 6 0 Q0 0 0 6 Q0 0 -6 0 Q0 0 0 -6Z" fill="#a99bff"/>
+        <circle cx="252" cy="140" r="14" fill="none" stroke="#c9bff7" stroke-width="2" stroke-dasharray="3 5"/>
+      </svg>
+
+      <div class="card">
+        <div id="formView">
+          <h2>Share your feedback</h2>
+          <form id="feedbackForm" novalidate>
+            <div class="row">
+              <div class="field" data-f="Name">
+                <label for="name">Name <span class="req">*</span></label>
+                <input id="name" type="text" placeholder="Your name" autocomplete="name">
+                <span class="err">Please enter your name.</span>
+              </div>
+              <div class="field" data-f="Email">
+                <label for="email">Email <span class="req">*</span></label>
+                <input id="email" type="email" placeholder="you@example.com" autocomplete="email">
+                <span class="err">Please enter a valid email.</span>
+              </div>
+            </div>
+
+            <div class="field" data-f="Phone">
+              <label for="phone">Phone <span class="opt">(optional)</span></label>
+              <input id="phone" type="tel" placeholder="Phone number" autocomplete="tel">
+            </div>
+
+            <div class="field" data-f="Rating">
+              <span class="lab" id="ratingLab">Overall rating <span class="req">*</span></span>
+              <div class="stars" id="stars" role="radiogroup" aria-labelledby="ratingLab"></div>
+              <span class="rtext" id="rtext"></span>
+              <span class="err">Please choose a rating.</span>
+            </div>
+
+            <div class="field" data-f="Category">
+              <span class="lab" id="catLab">What is it about? <span class="req">*</span></span>
+              <div class="chips" id="chips" role="group" aria-labelledby="catLab"></div>
+              <span class="err">Please pick a category.</span>
+            </div>
+
+            <div class="field" data-f="Recommend">
+              <span class="lab" id="recLab">Would you recommend us? <span class="req">*</span></span>
+              <div class="seg" id="seg" role="group" aria-labelledby="recLab">
+                <button type="button" data-v="Yes" aria-pressed="false">Yes</button>
+                <button type="button" data-v="No" aria-pressed="false">No</button>
+              </div>
+              <span class="err">Please select Yes or No.</span>
+            </div>
+
+            <div class="field" data-f="Message">
+              <label for="message">Message <span class="req">*</span></label>
+              <textarea id="message" maxlength="1000" placeholder="Tell us what went well and what we can improve"></textarea>
+              <div class="count"><span id="count">0</span> / 1000</div>
+              <span class="err">Please write a short message.</span>
+            </div>
+
+            <div class="fail" id="fail" role="alert">Could not send your feedback. Please check your connection and try again.</div>
+            <button type="submit" class="send" id="sendBtn"><span class="spin"></span><span id="sendText">Send Feedback</span></button>
+          </form>
+        </div>
+
+        <div class="done" id="done" aria-live="polite">
+          <div class="tick"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+          <h3>Thank you!</h3>
+          <p>Your feedback has been received. We read every response and use it to improve.</p>
+          <button type="button" class="again" id="again">Send another response</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<script>
+  // Google Apps Script web app URL (saves each response as a new row in your Google Sheet)
+  var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzUGoFjqCecV3fkJgWt9MbIYNH04JL3H3ZM0fgWJ9jlaGgE6CfpjQMAT_WG6U3gXSlDSA/exec";
+
+  var CATEGORIES = ["Product", "Service", "Support", "Delivery", "Pricing", "Website", "Other"];
+  var WORDS = ["", "Poor", "Fair", "Good", "Very good", "Excellent"];
+  var state = { rating: 0, category: "", recommend: "" };
+  var $ = function (id) { return document.getElementById(id); };
+
+  // Sparkle dots on the gradient
+  (function () {
+    var box = $("sparkles");
+    for (var i = 0; i < 46; i++) {
+      var d = document.createElement("i");
+      var s = 2 + Math.random() * 5;
+      d.style.cssText = "left:" + (Math.random() * 100) + "%;top:" + (Math.random() * 100) + "%;width:" + s + "px;height:" + s +
+        "px;animation-delay:" + (-Math.random() * 4) + "s;animation-duration:" + (3 + Math.random() * 4) + "s";
+      box.appendChild(d);
+    }
+  })();
+
+  function field(n) { return document.querySelector('[data-f="' + n + '"]'); }
+  function clearBad(n) { field(n).classList.remove("bad"); }
+
+  // Stars
+  var starsEl = $("stars");
+  var starSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.9-4.8 4.6 1.2 6.6L12 17.6 6.1 20.7l1.2-6.6L2.5 9.5l6.6-.9L12 2.5z"/></svg>';
+  for (var i = 1; i <= 5; i++) {
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "star"; b.dataset.v = i;
+    b.setAttribute("role", "radio"); b.setAttribute("aria-checked", "false");
+    b.setAttribute("aria-label", i + " out of 5 stars");
+    b.innerHTML = starSvg;
+    starsEl.appendChild(b);
+  }
+  function paint(n) {
+    Array.prototype.forEach.call(starsEl.children, function (s) {
+      s.classList.toggle("on", Number(s.dataset.v) <= n);
+      s.setAttribute("aria-checked", Number(s.dataset.v) === state.rating ? "true" : "false");
+    });
+  }
+  starsEl.addEventListener("click", function (e) {
+    var s = e.target.closest(".star"); if (!s) return;
+    state.rating = Number(s.dataset.v);
+    paint(state.rating);
+    $("rtext").textContent = WORDS[state.rating];
+    clearBad("Rating");
+  });
+  starsEl.addEventListener("mouseover", function (e) { var s = e.target.closest(".star"); if (s) paint(Number(s.dataset.v)); });
+  starsEl.addEventListener("mouseleave", function () { paint(state.rating); });
+
+  // Category chips
+  var chipsEl = $("chips");
+  CATEGORIES.forEach(function (c) {
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.textContent = c; b.setAttribute("aria-pressed", "false");
+    chipsEl.appendChild(b);
+  });
+  chipsEl.addEventListener("click", function (e) {
+    var c = e.target.closest(".chip"); if (!c) return;
+    state.category = c.textContent;
+    Array.prototype.forEach.call(chipsEl.children, function (x) { x.setAttribute("aria-pressed", x === c ? "true" : "false"); });
+    clearBad("Category");
+  });
+
+  // Yes / No
+  var segEl = $("seg");
+  segEl.addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    state.recommend = b.dataset.v;
+    Array.prototype.forEach.call(segEl.children, function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+    clearBad("Recommend");
+  });
+
+  $("message").addEventListener("input", function () { $("count").textContent = this.value.length; clearBad("Message"); });
+  $("name").addEventListener("input", function () { clearBad("Name"); });
+  $("email").addEventListener("input", function () { clearBad("Email"); });
+
+  function validate() {
+    var ok = true, first = null;
+    function check(n, good) {
+      field(n).classList.toggle("bad", !good);
+      if (!good) { ok = false; if (!first) first = field(n); }
+    }
+    check("Name", $("name").value.trim().length > 0);
+    check("Email", /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($("email").value.trim()));
+    check("Rating", state.rating > 0);
+    check("Category", state.category !== "");
+    check("Recommend", state.recommend !== "");
+    check("Message", $("message").value.trim().length > 0);
+    if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
+    return ok;
+  }
+
+  var form = $("feedbackForm");
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    $("fail").classList.remove("show");
+    if (!validate()) return;
+
+    var btn = $("sendBtn");
+    btn.disabled = true; btn.classList.add("loading");
+    $("sendText").textContent = "Sending...";
+
+    var body = new URLSearchParams();
+    body.append("Name", $("name").value.trim());
+    body.append("Email", $("email").value.trim());
+    body.append("Phone", $("phone").value.trim());
+    body.append("Rating", state.rating + " / 5");
+    body.append("Category", state.category);
+    body.append("Recommend", state.recommend);
+    body.append("Message", $("message").value.trim());
+
+    // no-cors: Apps Script sends no CORS headers, but the row is still saved in the sheet
+    fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: body })
+      .then(function () {
+        $("formView").style.display = "none";
+        $("done").classList.add("show");
+      })
+      .catch(function () { $("fail").classList.add("show"); })
+      .finally(function () {
+        btn.disabled = false; btn.classList.remove("loading");
+        $("sendText").textContent = "Send Feedback";
+      });
+  });
+
+  $("again").addEventListener("click", function () {
+    form.reset();
+    state = { rating: 0, category: "", recommend: "" };
+    paint(0);
+    $("rtext").textContent = "";
+    $("count").textContent = "0";
+    Array.prototype.forEach.call(chipsEl.children, function (x) { x.setAttribute("aria-pressed", "false"); });
+    Array.prototype.forEach.call(segEl.children, function (x) { x.setAttribute("aria-pressed", "false"); });
+    $("done").classList.remove("show");
+    $("formView").style.display = "";
+  });
+</script>
+</body>
+</html>
